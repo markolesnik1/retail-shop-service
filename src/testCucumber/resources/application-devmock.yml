@@ -1,0 +1,19 @@
+server:
+  port: 8087
+  address: 0.0.0.0
+  contextPath: /
+
+spring:
+  application:name: retail-shop-service
+  profiles.active: devmock
+  jackson:
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+    serialization.write_dates_as_timestamps: false
+    serialization.fail-on-empty-beans: false
+    default-property-inclusion: non_null
+    deserialization.fail-on-unknown-properties: false
+
+application:
+  google.maps:
+    apiKey: AIzaSyAyRCeH72dssRbN0g4lWQxoWyRlg302RV8
+    defaultCountry: UK

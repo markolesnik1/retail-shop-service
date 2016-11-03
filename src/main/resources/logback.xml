@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="false">
+    <property name="LOG_LEVEL" value="INFO"/>
+    <property name="PROJECT_ID" value="retail-shop-service"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>utf-8</charset>
+            <Pattern>%date{ISO8601} [%-5level] %X{principal} %X{sessionId} %logger{10} %msg%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/${PROJECT_ID}.log</file>
+        <encoder>
+            <charset>utf-8</charset>
+            <pattern>%date{ISO8601} [%-5level] %X{principal} %X{sessionId} %logger{10} %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/${PROJECT_ID}_%d{yyyy-MM-dd}.log.%i</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>1MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.retail" level="${LOG_LEVEL}"/>
+    <logger name="org.apache" level="WARN"/>
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="com.fasterxml.jackson.databind" level="INFO"/>
+    <logger name="org.springframework.http" level="INFO"/>
+    <logger name="io.springfox" level="INFO"/>
+    <logger name="springfox.documentation" level="INFO"/>
+    <logger name="io.swagger" level="INFO"/>
+
+    <root level="${LOG_LEVEL}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

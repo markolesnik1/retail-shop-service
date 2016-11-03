@@ -1,0 +1,166 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.1.RELEASE")
+        classpath "com.github.jengelman.gradle.plugins:shadow:1.2.3"
+    }
+}
+
+plugins {
+    id "com.commercehub.cucumber-jvm" version "0.7"
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'application'
+apply plugin: 'spring-boot'
+apply plugin: 'jacoco'
+apply plugin: "cucumber-jvm"
+apply plugin: "com.github.johnrengelman.shadow" // fat JAR
+
+group = 'com.retail'
+version = '0.0.1'
+description = 'Retail Shop Service'
+
+mainClassName = "com.retail.RetailShopServiceApplication"
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+ext {
+    jackson = '2.8.3'
+    woodstox = '4.4.1'
+    logstashLogbackEncoder = '4.7'
+    logbackCore = '1.1.7'
+    commonsLang3 = '3.4'
+    slf4j = '1.7.21'
+    swaggerAnnotations = '1.5.10'
+    swagger = '2.6.0'
+    googleMaps = '0.1.16'
+    spring = '4.3.3.RELEASE'
+    springBoot = '1.4.1.RELEASE'
+    springRestdocs = '1.1.2.RELEASE'
+    hamcrestJson = '0.2'
+    cucumber = '1.2.5'
+    testNg = '6.9.13.6'
+    powerMock = '1.6.5'
+}
+
+jar {
+    version = null
+}
+
+jacoco {
+    toolVersion = "0.7.7.201606060606"
+    reportsDir = file("$buildDir/reports/jacoco")
+}
+
+jacocoTestReport {
+    group = "verification"
+
+    reports {
+        html.enabled true
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/reports/jacoco-code-coverage"
+    }
+}
+
+test {
+    useTestNG() {
+        useDefaultListeners = true
+        outputDirectory = file("$project.buildDir/reports/test-ng")
+    }
+
+    reports.html.destination = file("$buildDir/reports/gradle")
+
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat "full"
+        events "started", "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+
+    jacoco {
+        append = false
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpFile = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+// acceptance tests
+addCucumberSuite 'testCucumber'
+
+cucumber {
+    maxParallelForks = 1
+}
+
+testCucumber {
+    group 'verification'
+    stepDefinitionRoots = ['classpath:com/retail/test/steps']
+    featureRoots = ['features']
+}
+
+// run code coverage report after all unit tests
+tasks.test.finalizedBy tasks.jacocoTestReport
+
+// disable running tests unless test task explicitly invoked
+check.dependsOn.remove(test)
+
+configurations {
+    compile {
+        exclude group: 'commons-logging'
+    }
+}
+
+dependencies {
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: project.jackson
+    compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: project.jackson
+    compile group: 'org.codehaus.woodstox', name: 'woodstox-core-asl', version: project.woodstox
+    compile group: 'net.logstash.logback', name: 'logstash-logback-encoder', version: project.logstashLogbackEncoder
+    compile group: 'ch.qos.logback', name: 'logback-core', version: project.logbackCore
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: project.commonsLang3
+    compile group: 'org.slf4j', name: 'slf4j-api', version: project.slf4j
+    compile group: 'com.google.maps', name: 'google-maps-services', version: project.googleMaps
+
+    compile group: 'io.swagger', name: 'swagger-annotations', version: project.swaggerAnnotations
+    compile(group: 'io.springfox', name: 'springfox-swagger2', version: project.swagger) {
+        exclude module: 'spring-beans'
+        exclude module: 'spring-context'
+        exclude module: 'spring-aop'
+    }
+    compile group: 'io.springfox', name: 'springfox-swagger-ui', version: project.swagger
+
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: project.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-hateoas', version: project.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-actuator', version: project.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-loader-tools', version: project.springBoot
+    compile group: 'org.springframework.boot', name: 'spring-boot-devtools', version: project.springBoot
+    compile group: 'org.springframework', name: 'spring-oxm', version: project.spring
+    compile group: 'org.springframework', name: 'spring-tx', version: project.spring
+
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: project.springBoot
+    testCompile group: 'org.testng', name: 'testng', version: project.testNg
+    testCompile group: 'org.powermock', name: 'powermock-api-mockito', version: project.powerMock
+    testCompile group: 'org.powermock', name: 'powermock-module-testng', version: project.powerMock
+
+    testCucumberCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: project.springBoot
+    testCucumberCompile(group: 'org.springframework.restdocs', name: 'spring-restdocs-mockmvc', version: project.springRestdocs) {
+        exclude(group: 'org.springframework')
+    }
+    testCucumberCompile group: 'uk.co.datumedge', name: 'hamcrest-json', version: project.hamcrestJson
+    testCucumberCompile group: 'info.cukes', name: 'cucumber-java', version: project.cucumber
+    testCucumberCompile group: 'info.cukes', name: 'cucumber-testng', version: project.cucumber
+    testCucumberCompile group: 'info.cukes', name: 'cucumber-spring', version: project.cucumber
+    testCucumberCompile group: 'info.cukes', name: 'cucumber-jvm', version: project.cucumber
+}
